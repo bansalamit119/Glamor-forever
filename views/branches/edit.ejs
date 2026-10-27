@@ -1,0 +1,27 @@
+<div class="page-header">
+  <div>
+    <a href="/branches" class="back-link">← Branches</a>
+    <h1>Edit Branch</h1>
+    <p class="subtitle">
+      <a href="/employees?branch=<%= branch.id %>" class="link"><%= branch._count.employees %> employee<%= branch._count.employees === 1 ? '' : 's' %></a> at this branch.
+    </p>
+  </div>
+</div>
+
+<%- include('_form', { action: '/branches/' + branch.id + '/edit', submitLabel: 'Save Changes' }) %>
+
+<section class="card danger-zone form-narrow">
+  <div>
+    <h2>Delete branch</h2>
+    <p class="card-sub">
+      <% if (branch._count.employees > 0) { %>
+        This branch has employees. Move them to another branch before deleting it.
+      <% } else { %>
+        Permanently removes this branch.
+      <% } %>
+    </p>
+  </div>
+  <form method="POST" action="/branches/<%= branch.id %>/delete" data-confirm="Delete this branch? This cannot be undone.">
+    <button type="submit" class="btn btn-danger" <%= branch._count.employees > 0 ? 'disabled' : '' %>>Delete Branch</button>
+  </form>
+</section>

@@ -1,0 +1,65 @@
+// Glamour Forever - Prisma schema
+// Three simple models: Branch -> Employee -> EmployeeDocument
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Branch {
+  id        Int        @id @default(autoincrement())
+  name      String
+  region    String     // plain text, e.g. "Greater London", "Scotland"
+  address   String?
+  phone     String?
+  status    String     @default("Active") // "Active" | "Inactive"
+  employees Employee[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Employee {
+  id                    Int                @id @default(autoincrement())
+  employeeNumber        String             @unique
+  firstName             String
+  lastName              String
+  email                 String?
+  phone                 String?
+  dateOfBirth           DateTime?          @db.Date
+  address               String?
+  jobTitle              String?
+  branchId              Int
+  branch                Branch             @relation(fields: [branchId], references: [id])
+  employmentStatus      String             @default("Active") // Active | Inactive | On Leave | Terminated
+  startDate             DateTime?          @db.Date
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  notes                 String?
+  documents             EmployeeDocument[]
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+model EmployeeDocument {
+  id             Int       @id @default(autoincrement())
+  employeeId     Int
+  employee       Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  documentType   String    // plain string so new types can be added without a migration
+  documentNumber String?
+  issueDate      DateTime? @db.Date
+  expiryDate     DateTime? @db.Date
+  fileName       String?   // original file name shown to the user
+  mimeType       String?   // application/pdf | image/jpeg | image/png
+  fileSize       Int?
+  // The file itself is stored in the database so it survives restarts on hosts
+  // without persistent disks (e.g. Render free tier). Excluded from queries by
+  // default - see the global `omit` in helpers.js.
+  fileData       Bytes?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}

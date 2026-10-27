@@ -1,0 +1,46 @@
+<%# Shared branch form used by new.ejs and edit.ejs %>
+<% if (errors.length) { %>
+  <div class="form-errors">
+    <strong>Unable to save branch.</strong>
+    <ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul>
+  </div>
+<% } %>
+
+<form method="POST" action="<%= action %>" class="form card form-card form-narrow">
+  <div class="grid-2">
+    <div class="field">
+      <label for="name">Branch Name <span class="req">*</span></label>
+      <input id="name" name="name" value="<%= branch.name || '' %>" required maxlength="120" placeholder="London Soho">
+    </div>
+    <div class="field">
+      <label for="region">Region <span class="req">*</span></label>
+      <input id="region" name="region" value="<%= branch.region || '' %>" required maxlength="80" list="regions" placeholder="Greater London">
+      <datalist id="regions">
+        <% h.UK_REGIONS.forEach(r => { %><option value="<%= r %>"><% }) %>
+      </datalist>
+    </div>
+  </div>
+  <div class="field">
+    <label for="address">Address</label>
+    <input id="address" name="address" value="<%= branch.address || '' %>" maxlength="255">
+  </div>
+  <div class="grid-2">
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input id="phone" name="phone" value="<%= branch.phone || '' %>" maxlength="40">
+    </div>
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <% h.BRANCH_STATUSES.forEach(s => { %>
+          <option value="<%= s %>" <%= branch.status === s ? 'selected' : '' %>><%= s %></option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <a href="/branches" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><%= submitLabel %></button>
+  </div>
+</form>

@@ -1,0 +1,112 @@
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="subtitle">Overview of staff and document compliance across all branches.</p>
+  </div>
+  <div class="actions-row">
+    <a href="/employees" class="btn btn-secondary">View All Employees</a>
+    <a href="/employees/new" class="btn btn-primary">+ Add Employee</a>
+  </div>
+</div>
+
+<div class="stats">
+  <a href="/employees" class="stat-card">
+    <span class="stat-label">Total Employees</span>
+    <span class="stat-value"><%= stats.totalEmployees %></span>
+    <span class="stat-hint">Across all branches</span>
+  </a>
+  <a href="/employees?status=Active" class="stat-card">
+    <span class="stat-label">Active Employees</span>
+    <span class="stat-value"><%= stats.activeEmployees %></span>
+    <span class="stat-hint"><%= stats.totalEmployees - stats.activeEmployees %> inactive, on leave or terminated</span>
+  </a>
+  <a href="/branches" class="stat-card">
+    <span class="stat-label">Branches</span>
+    <span class="stat-value"><%= stats.totalBranches %></span>
+    <span class="stat-hint">Salon locations</span>
+  </a>
+  <div class="stat-card stat-warning">
+    <span class="stat-label">Expiring Soon</span>
+    <span class="stat-value"><%= stats.expiringSoon %></span>
+    <span class="stat-hint">Within 90 days · <strong><%= stats.urgent %> urgent</strong></span>
+  </div>
+  <div class="stat-card stat-danger">
+    <span class="stat-label">Expired Documents</span>
+    <span class="stat-value"><%= stats.expired %></span>
+    <span class="stat-hint">Require renewal now</span>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+  <section class="card">
+    <div class="card-header">
+      <div>
+        <h2>Documents Requiring Attention</h2>
+        <p class="card-sub">Expired or expiring within 90 days, soonest first.</p>
+      </div>
+    </div>
+    <% if (attentionDocuments.length === 0) { %>
+      <div class="empty-inline">✓ All documents are up to date.</div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Document</th>
+              <th>Branch</th>
+              <th>Expiry</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% attentionDocuments.forEach(doc => { const s = h.documentStatus(doc.expiryDate); %>
+              <tr class="row-link" data-href="/employees/<%= doc.employee.id %>#documents">
+                <td>
+                  <a href="/employees/<%= doc.employee.id %>#documents" class="person">
+                    <span class="avatar avatar-sm"><%= h.initials(doc.employee.firstName, doc.employee.lastName) %></span>
+                    <span class="person-name"><%= doc.employee.firstName %> <%= doc.employee.lastName %></span>
+                  </a>
+                </td>
+                <td><%= doc.documentType %></td>
+                <td class="muted"><%= doc.employee.branch.name %></td>
+                <td>
+                  <span class="nowrap"><%= h.formatDate(doc.expiryDate) %></span>
+                  <span class="cell-sub"><%= h.relativeDays(s.days) %></span>
+                </td>
+                <td><span class="badge badge-<%= s.key %>"><%= s.label %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <div>
+        <h2>Branches</h2>
+        <p class="card-sub">Team size by location.</p>
+      </div>
+      <a href="/branches" class="link">View all</a>
+    </div>
+    <ul class="branch-list">
+      <% const maxCount = Math.max(1, ...branches.map(b => b._count.employees)); %>
+      <% branches.forEach(b => { %>
+        <li>
+          <a href="/employees?branch=<%= b.id %>">
+            <span class="branch-list-top">
+              <span>
+                <span class="branch-list-name"><%= b.name %></span>
+                <span class="cell-sub"><%= b.region %></span>
+              </span>
+              <span class="branch-list-count"><%= b._count.employees %></span>
+            </span>
+            <span class="bar"><span style="width: <%= Math.round(b._count.employees / maxCount * 100) %>%"></span></span>
+          </a>
+        </li>
+      <% }) %>
+    </ul>
+  </section>
+</div>

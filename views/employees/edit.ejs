@@ -1,0 +1,19 @@
+<div class="page-header">
+  <div>
+    <a href="/employees/<%= employee.id %>" class="back-link">← Back to profile</a>
+    <h1>Edit Employee</h1>
+    <p class="subtitle">Fields marked <span class="req">*</span> are required.</p>
+  </div>
+</div>
+
+<%- include('_form', { action: '/employees/' + employee.id + '/edit', cancelUrl: '/employees/' + employee.id, submitLabel: 'Save Changes' }) %>
+
+<section class="card danger-zone">
+  <div>
+    <h2>Delete employee</h2>
+    <p class="card-sub">Permanently removes this employee and all of their uploaded documents.</p>
+  </div>
+  <form method="POST" action="/employees/<%= employee.id %>/delete" data-confirm="Delete this employee and all their documents? This cannot be undone.">
+    <button type="submit" class="btn btn-danger">Delete Employee</button>
+  </form>
+</section>

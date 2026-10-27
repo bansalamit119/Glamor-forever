@@ -1,0 +1,68 @@
+<%# Used for both "Add Document" and "Edit Document" %>
+<% const isEdit = !!document.id; %>
+<div class="page-header">
+  <div>
+    <a href="/employees/<%= employee.id %>#documents" class="back-link">← <%= employee.firstName %> <%= employee.lastName %></a>
+    <h1><%= isEdit ? 'Edit Document' : 'Add Document' %></h1>
+    <p class="subtitle">For <%= employee.firstName %> <%= employee.lastName %> · <span class="mono"><%= employee.employeeNumber %></span></p>
+  </div>
+</div>
+
+<% if (errors.length) { %>
+  <div class="form-errors">
+    <strong>Unable to save document.</strong>
+    <ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul>
+  </div>
+<% } %>
+
+<form method="POST" enctype="multipart/form-data" class="form card form-card form-narrow"
+      action="<%= isEdit ? `/employees/${employee.id}/documents/${document.id}/edit` : `/employees/${employee.id}/documents` %>">
+  <div class="grid-2">
+    <div class="field">
+      <label for="documentType">Document Type <span class="req">*</span></label>
+      <select id="documentType" name="documentType" required>
+        <option value="">Select a type…</option>
+        <% h.DOCUMENT_TYPES.forEach(t => { %>
+          <option value="<%= t %>" <%= document.documentType === t ? 'selected' : '' %>><%= t %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="field">
+      <label for="documentNumber">Document Number</label>
+      <input id="documentNumber" name="documentNumber" value="<%= document.documentNumber || '' %>" maxlength="80">
+    </div>
+    <div class="field">
+      <label for="issueDate">Issue Date</label>
+      <input id="issueDate" name="issueDate" type="date" value="<%= h.inputDate(document.issueDate) %>">
+    </div>
+    <div class="field">
+      <label for="expiryDate">Expiry Date</label>
+      <input id="expiryDate" name="expiryDate" type="date" value="<%= h.inputDate(document.expiryDate) %>">
+      <span class="field-hint">Leave blank if the document does not expire.</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes" rows="3" maxlength="2000"><%= document.notes || '' %></textarea>
+  </div>
+
+  <%# File input last, so the text fields are parsed before the file during upload %>
+  <div class="field">
+    <label for="file"><%= isEdit ? 'Replace File' : 'Upload File' %></label>
+    <label class="dropzone" for="file">
+      <input id="file" name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+      <span class="dropzone-icon">⇪</span>
+      <span class="dropzone-text">Click to choose a file</span>
+      <span class="field-hint">PDF, JPG or PNG · max <%= maxFileSizeMb %> MB</span>
+    </label>
+    <% if (isEdit && document.fileName) { %>
+      <span class="field-hint">Current file: <strong><%= document.fileName %></strong>. Choose a new file to replace it.</span>
+    <% } %>
+  </div>
+
+  <div class="form-actions">
+    <a href="/employees/<%= employee.id %>#documents" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><%= isEdit ? 'Save Changes' : 'Save Document' %></button>
+  </div>
+</form>

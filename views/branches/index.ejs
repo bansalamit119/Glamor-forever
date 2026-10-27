@@ -1,0 +1,59 @@
+<div class="page-header">
+  <div>
+    <h1>Branches</h1>
+    <p class="subtitle"><%= branches.length %> salon location<%= branches.length === 1 ? '' : 's' %>.</p>
+  </div>
+  <div class="actions-row">
+    <a href="/branches/new" class="btn btn-primary">+ Add Branch</a>
+  </div>
+</div>
+
+<section class="card">
+  <% if (branches.length === 0) { %>
+    <div class="empty-inline">No branches yet. <a href="/branches/new" class="link">Add your first branch</a>.</div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Branch</th>
+            <th>Region</th>
+            <th>Phone</th>
+            <th>Employees</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% branches.forEach(b => { %>
+            <tr>
+              <td>
+                <div class="person">
+                  <span class="avatar avatar-branch">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg>
+                  </span>
+                  <span>
+                    <span class="person-name"><%= b.name %></span>
+                    <span class="cell-sub"><%= b.address || '—' %></span>
+                  </span>
+                </div>
+              </td>
+              <td><%= b.region %></td>
+              <td class="nowrap"><%= b.phone || '—' %></td>
+              <td>
+                <a href="/employees?branch=<%= b.id %>" class="link"><%= b._count.employees %> employee<%= b._count.employees === 1 ? '' : 's' %></a>
+              </td>
+              <td><span class="badge badge-status-<%= b.status.toLowerCase() %>"><%= b.status %></span></td>
+              <td class="text-right">
+                <div class="row-actions">
+                  <a href="/employees?branch=<%= b.id %>" class="btn btn-sm btn-ghost">Staff</a>
+                  <a href="/branches/<%= b.id %>/edit" class="btn btn-sm btn-secondary">Edit</a>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

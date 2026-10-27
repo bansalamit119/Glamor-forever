@@ -1,0 +1,103 @@
+<%# Shared employee form used by new.ejs and edit.ejs %>
+<% if (errors.length) { %>
+  <div class="form-errors">
+    <strong>Unable to save employee.</strong>
+    <ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul>
+  </div>
+<% } %>
+
+<form method="POST" action="<%= action %>" class="form card form-card">
+  <fieldset>
+    <legend>Personal Information</legend>
+    <div class="grid-2">
+      <div class="field">
+        <label for="firstName">First Name <span class="req">*</span></label>
+        <input id="firstName" name="firstName" value="<%= employee.firstName || '' %>" required maxlength="80">
+      </div>
+      <div class="field">
+        <label for="lastName">Last Name <span class="req">*</span></label>
+        <input id="lastName" name="lastName" value="<%= employee.lastName || '' %>" required maxlength="80">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" value="<%= employee.email || '' %>" maxlength="160">
+      </div>
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" value="<%= employee.phone || '' %>" maxlength="40">
+      </div>
+      <div class="field">
+        <label for="dateOfBirth">Date of Birth</label>
+        <input id="dateOfBirth" name="dateOfBirth" type="date" value="<%= h.inputDate(employee.dateOfBirth) %>">
+      </div>
+      <div class="field">
+        <label for="address">Address</label>
+        <input id="address" name="address" value="<%= employee.address || '' %>" maxlength="255">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Employment</legend>
+    <div class="grid-2">
+      <div class="field">
+        <label for="employeeNumber">Employee Number <span class="req">*</span></label>
+        <input id="employeeNumber" name="employeeNumber" value="<%= employee.employeeNumber || '' %>" required maxlength="40" placeholder="GF-00111">
+      </div>
+      <div class="field">
+        <label for="jobTitle">Job Title</label>
+        <input id="jobTitle" name="jobTitle" value="<%= employee.jobTitle || '' %>" maxlength="80" list="jobTitles">
+        <datalist id="jobTitles">
+          <% h.JOB_TITLES.forEach(t => { %><option value="<%= t %>"><% }) %>
+        </datalist>
+      </div>
+      <div class="field">
+        <label for="branchId">Branch <span class="req">*</span></label>
+        <select id="branchId" name="branchId" required>
+          <option value="">Select a branch…</option>
+          <% branches.forEach(b => { %>
+            <option value="<%= b.id %>" <%= employee.branchId === b.id ? 'selected' : '' %>><%= b.name %> — <%= b.region %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="employmentStatus">Employment Status <span class="req">*</span></label>
+        <select id="employmentStatus" name="employmentStatus" required>
+          <% h.EMPLOYMENT_STATUSES.forEach(s => { %>
+            <option value="<%= s %>" <%= employee.employmentStatus === s ? 'selected' : '' %>><%= s %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="startDate">Start Date</label>
+        <input id="startDate" name="startDate" type="date" value="<%= h.inputDate(employee.startDate) %>">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Emergency Contact</legend>
+    <div class="grid-2">
+      <div class="field">
+        <label for="emergencyContactName">Name</label>
+        <input id="emergencyContactName" name="emergencyContactName" value="<%= employee.emergencyContactName || '' %>" maxlength="120">
+      </div>
+      <div class="field">
+        <label for="emergencyContactPhone">Phone</label>
+        <input id="emergencyContactPhone" name="emergencyContactPhone" value="<%= employee.emergencyContactPhone || '' %>" maxlength="40">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Notes</legend>
+    <div class="field">
+      <textarea id="notes" name="notes" rows="3" maxlength="2000" aria-label="Notes"><%= employee.notes || '' %></textarea>
+    </div>
+  </fieldset>
+
+  <div class="form-actions">
+    <a href="<%= cancelUrl %>" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><%= submitLabel %></button>
+  </div>
+</form>

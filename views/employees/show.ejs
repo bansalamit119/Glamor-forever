@@ -1,0 +1,130 @@
+<%
+  const statuses = documents.map(d => h.documentStatus(d.expiryDate).key);
+  const expiredCount = statuses.filter(s => s === 'expired').length;
+  const attentionCount = statuses.filter(s => s === 'urgent' || s === 'expiring').length;
+%>
+<a href="/employees" class="back-link">← Employees</a>
+
+<section class="profile-hero card">
+  <div class="profile-main">
+    <span class="avatar avatar-xl"><%= h.initials(employee.firstName, employee.lastName) %></span>
+    <div>
+      <h1><%= employee.firstName %> <%= employee.lastName %></h1>
+      <p class="profile-title"><%= employee.jobTitle || 'No job title' %></p>
+      <div class="profile-meta">
+        <span class="mono">Employee #<%= employee.employeeNumber %></span>
+        <span class="sep">·</span>
+        <span>Glamour Forever — <%= employee.branch.name %></span>
+        <span class="badge badge-status-<%= employee.employmentStatus.toLowerCase().replace(' ', '-') %>"><%= employee.employmentStatus %></span>
+      </div>
+    </div>
+  </div>
+  <div class="actions-row">
+    <a href="/employees/<%= employee.id %>/edit" class="btn btn-secondary">Edit Employee</a>
+    <a href="/employees/<%= employee.id %>/documents/new" class="btn btn-primary">+ Add Document</a>
+  </div>
+</section>
+
+<% if (expiredCount || attentionCount) { %>
+  <div class="notice <%= expiredCount ? 'notice-danger' : 'notice-warning' %>">
+    <strong><%= expiredCount ? 'Action required:' : 'Heads up:' %></strong>
+    <% if (expiredCount) { %><%= expiredCount %> expired document<%= expiredCount === 1 ? '' : 's' %><% } %>
+    <% if (expiredCount && attentionCount) { %> and <% } %>
+    <% if (attentionCount) { %><%= attentionCount %> document<%= attentionCount === 1 ? '' : 's' %> expiring within 90 days<% } %>.
+  </div>
+<% } %>
+
+<div class="profile-grid">
+  <section class="card">
+    <h2 class="section-title">Personal Information</h2>
+    <dl class="details">
+      <dt>Full Name</dt><dd><%= employee.firstName %> <%= employee.lastName %></dd>
+      <dt>Date of Birth</dt><dd><%= h.formatDate(employee.dateOfBirth) %></dd>
+      <dt>Phone</dt><dd><%= employee.phone || '—' %></dd>
+      <dt>Email</dt><dd><%= employee.email || '—' %></dd>
+      <dt>Address</dt><dd><%= employee.address || '—' %></dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Employment</h2>
+    <dl class="details">
+      <dt>Employee Number</dt><dd class="mono"><%= employee.employeeNumber %></dd>
+      <dt>Job Title</dt><dd><%= employee.jobTitle || '—' %></dd>
+      <dt>Branch</dt><dd><a href="/employees?branch=<%= employee.branch.id %>" class="link"><%= employee.branch.name %></a></dd>
+      <dt>Region</dt><dd><%= employee.branch.region %></dd>
+      <dt>Status</dt><dd><%= employee.employmentStatus %></dd>
+      <dt>Start Date</dt><dd><%= h.formatDate(employee.startDate) %></dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Emergency Contact</h2>
+    <dl class="details">
+      <dt>Name</dt><dd><%= employee.emergencyContactName || '—' %></dd>
+      <dt>Phone</dt><dd><%= employee.emergencyContactPhone || '—' %></dd>
+    </dl>
+    <% if (employee.notes) { %>
+      <h2 class="section-title section-title-spaced">Notes</h2>
+      <p class="notes"><%= employee.notes %></p>
+    <% } %>
+  </section>
+</div>
+
+<section class="card" id="documents">
+  <div class="card-header">
+    <div>
+      <h2>Documents</h2>
+      <p class="card-sub"><%= documents.length %> document<%= documents.length === 1 ? '' : 's' %> on file</p>
+    </div>
+    <a href="/employees/<%= employee.id %>/documents/new" class="btn btn-primary btn-sm">+ Add Document</a>
+  </div>
+
+  <% if (documents.length === 0) { %>
+    <div class="empty-inline">No documents uploaded yet.</div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Number</th>
+            <th>Issued</th>
+            <th>Expiry</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% documents.forEach(doc => { const s = h.documentStatus(doc.expiryDate); %>
+            <tr>
+              <td>
+                <span class="doc-name"><%= doc.documentType %></span>
+                <span class="cell-sub" title="<%= doc.fileName || '' %>"><%= doc.fileName || 'No file attached' %></span>
+              </td>
+              <td class="mono"><%= doc.documentNumber || '—' %></td>
+              <td class="nowrap"><%= h.formatDate(doc.issueDate) %></td>
+              <td>
+                <span class="nowrap"><%= h.formatDate(doc.expiryDate) %></span>
+                <% if (doc.expiryDate) { %><span class="cell-sub"><%= h.relativeDays(s.days) %></span><% } else { %><span class="cell-sub">No expiry</span><% } %>
+              </td>
+              <td><span class="badge badge-<%= s.key %>"><%= s.label %></span></td>
+              <td class="text-right">
+                <div class="row-actions">
+                  <% if (doc.fileSize) { %>
+                    <a href="/employees/<%= employee.id %>/documents/<%= doc.id %>" target="_blank" rel="noopener" class="btn btn-sm btn-secondary">View</a>
+                    <a href="/employees/<%= employee.id %>/documents/<%= doc.id %>/download" class="btn btn-sm btn-ghost" title="Download">↓</a>
+                  <% } %>
+                  <a href="/employees/<%= employee.id %>/documents/<%= doc.id %>/edit" class="btn btn-sm btn-ghost">Edit</a>
+                  <form method="POST" action="/employees/<%= employee.id %>/documents/<%= doc.id %>/delete" data-confirm="Delete this <%= doc.documentType %> document? This cannot be undone.">
+                    <button type="submit" class="btn btn-sm btn-ghost btn-ghost-danger">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

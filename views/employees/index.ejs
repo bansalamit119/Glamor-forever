@@ -1,0 +1,86 @@
+<div class="page-header">
+  <div>
+    <h1>Employees</h1>
+    <p class="subtitle"><%= totalCount %> employees across all branches.</p>
+  </div>
+  <div class="actions-row">
+    <a href="/employees/new" class="btn btn-primary">+ Add Employee</a>
+  </div>
+</div>
+
+<form method="GET" action="/employees" class="filters card">
+  <div class="search-field">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input type="search" name="search" value="<%= filters.search %>" placeholder="Search by name, employee ID or email…">
+  </div>
+  <select name="branch" class="auto-submit" aria-label="Branch">
+    <option value="">All branches</option>
+    <% branches.forEach(b => { %>
+      <option value="<%= b.id %>" <%= filters.branch === b.id ? 'selected' : '' %>><%= b.name %></option>
+    <% }) %>
+  </select>
+  <select name="status" class="auto-submit" aria-label="Status">
+    <option value="">All statuses</option>
+    <% h.EMPLOYMENT_STATUSES.forEach(s => { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }) %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Search</button>
+  <% if (filters.search || filters.branch || filters.status) { %>
+    <a href="/employees" class="link">Clear</a>
+  <% } %>
+</form>
+
+<section class="card">
+  <% if (employees.length === 0) { %>
+    <div class="empty-inline">
+      No employees match your search.
+      <% if (filters.search || filters.branch || filters.status) { %><a href="/employees" class="link">Clear filters</a><% } %>
+    </div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Employee ID</th>
+            <th>Position</th>
+            <th>Branch</th>
+            <th>Status</th>
+            <th>Documents</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% employees.forEach(e => { %>
+            <tr class="row-link" data-href="/employees/<%= e.id %>">
+              <td>
+                <a href="/employees/<%= e.id %>" class="person">
+                  <span class="avatar"><%= h.initials(e.firstName, e.lastName) %></span>
+                  <span>
+                    <span class="person-name"><%= e.firstName %> <%= e.lastName %></span>
+                    <span class="cell-sub"><%= e.email || '—' %></span>
+                  </span>
+                </a>
+              </td>
+              <td class="mono"><%= e.employeeNumber %></td>
+              <td><%= e.jobTitle || '—' %></td>
+              <td><%= e.branch.name %></td>
+              <td><span class="badge badge-status-<%= e.employmentStatus.toLowerCase().replace(' ', '-') %>"><%= e.employmentStatus %></span></td>
+              <td>
+                <span class="nowrap"><%= e.documents.length %> document<%= e.documents.length === 1 ? '' : 's' %></span>
+                <% if (e.expiredCount) { %>
+                  <span class="dot-note dot-expired"><%= e.expiredCount %> expired</span>
+                <% } else if (e.attentionCount) { %>
+                  <span class="dot-note dot-expiring"><%= e.attentionCount %> expiring</span>
+                <% } %>
+              </td>
+              <td class="text-right"><a href="/employees/<%= e.id %>" class="btn btn-sm btn-secondary">View</a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">Showing <%= employees.length %> of <%= totalCount %> employees</div>
+  <% } %>
+</section>

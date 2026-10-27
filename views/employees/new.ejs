@@ -1,0 +1,9 @@
+<div class="page-header">
+  <div>
+    <a href="/employees" class="back-link">← Employees</a>
+    <h1>Add Employee</h1>
+    <p class="subtitle">Fields marked <span class="req">*</span> are required.</p>
+  </div>
+</div>
+
+<%- include('_form', { action: '/employees', cancelUrl: '/employees', submitLabel: 'Create Employee' }) %>

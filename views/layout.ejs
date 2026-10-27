@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title><%= typeof title !== 'undefined' ? title + ' · ' : '' %>Glamour Forever</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <a href="/dashboard" class="brand">
+        <span class="brand-mark">GF</span>
+        <span>
+          <span class="brand-name">Glamour Forever</span>
+          <span class="brand-sub">Employee Management</span>
+        </span>
+      </a>
+
+      <nav class="nav">
+        <a href="/dashboard" class="nav-link <%= currentPath.startsWith('/dashboard') ? 'active' : '' %>">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="/employees" class="nav-link <%= currentPath.startsWith('/employees') ? 'active' : '' %>">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.5c2.4 0 4.3 1.5 5 4.5"/></svg>
+          <span>Employees</span>
+        </a>
+        <a href="/branches" class="nav-link <%= currentPath.startsWith('/branches') ? 'active' : '' %>">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/><path d="M3 21h18"/></svg>
+          <span>Branches</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="nav-link nav-link-muted" title="Coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          <span>Settings <small class="soon">Soon</small></span>
+        </span>
+        <div class="user-box">
+          <span class="user-avatar">A</span>
+          <span class="user-info">
+            <span class="user-role">Administrator</span>
+            <span class="user-email"><%= adminEmail %></span>
+          </span>
+        </div>
+        <form method="POST" action="/logout">
+          <button type="submit" class="logout-btn">Sign out</button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="main">
+      <% if (flash) { %>
+        <div class="flash flash-<%= flash.type %>" role="status">
+          <span class="flash-icon"><%= flash.type === 'success' ? '✓' : '✕' %></span>
+          <span><%= flash.message %></span>
+          <button type="button" class="flash-close" aria-label="Dismiss">×</button>
+        </div>
+      <% } %>
+      <%- body %>
+    </main>
+  </div>
+  <script src="/js/app.js"></script>
+</body>
+</html>
