@@ -27,7 +27,7 @@
         <tbody>
           <% branches.forEach(b => { %>
             <tr>
-              <td>
+              <td class="cell-primary">
                 <div class="person">
                   <span class="avatar avatar-branch">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg>
@@ -38,13 +38,13 @@
                   </span>
                 </div>
               </td>
-              <td><%= b.region %></td>
-              <td class="nowrap"><%= b.phone || '—' %></td>
-              <td>
+              <td data-label="Region"><%= b.region %></td>
+              <td data-label="Phone" class="nowrap"><%= b.phone || '—' %></td>
+              <td data-label="Employees">
                 <a href="/employees?branch=<%= b.id %>" class="link"><%= b._count.employees %> employee<%= b._count.employees === 1 ? '' : 's' %></a>
               </td>
-              <td><span class="badge badge-status-<%= b.status.toLowerCase() %>"><%= b.status %></span></td>
-              <td class="text-right">
+              <td data-label="Status"><span class="badge badge-status-<%= b.status.toLowerCase() %>"><%= b.status %></span></td>
+              <td class="text-right cell-actions">
                 <div class="row-actions">
                   <a href="/employees?branch=<%= b.id %>" class="btn btn-sm btn-ghost">Staff</a>
                   <a href="/branches/<%= b.id %>/edit" class="btn btn-sm btn-secondary">Edit</a>

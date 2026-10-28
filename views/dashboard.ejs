@@ -62,19 +62,19 @@
           <tbody>
             <% attentionDocuments.forEach(doc => { const s = h.documentStatus(doc.expiryDate); %>
               <tr class="row-link" data-href="/employees/<%= doc.employee.id %>#documents">
-                <td>
+                <td class="cell-primary">
                   <a href="/employees/<%= doc.employee.id %>#documents" class="person">
                     <span class="avatar avatar-sm"><%= h.initials(doc.employee.firstName, doc.employee.lastName) %></span>
                     <span class="person-name"><%= doc.employee.firstName %> <%= doc.employee.lastName %></span>
                   </a>
                 </td>
-                <td><%= doc.documentType %></td>
-                <td class="muted"><%= doc.employee.branch.name %></td>
-                <td>
+                <td data-label="Document"><%= doc.documentType %></td>
+                <td data-label="Branch" class="muted"><%= doc.employee.branch.name %></td>
+                <td data-label="Expiry">
                   <span class="nowrap"><%= h.formatDate(doc.expiryDate) %></span>
                   <span class="cell-sub"><%= h.relativeDays(s.days) %></span>
                 </td>
-                <td><span class="badge badge-<%= s.key %>"><%= s.label %></span></td>
+                <td data-label="Status"><span class="badge badge-<%= s.key %>"><%= s.label %></span></td>
               </tr>
             <% }) %>
           </tbody>

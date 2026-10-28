@@ -98,18 +98,18 @@
         <tbody>
           <% documents.forEach(doc => { const s = h.documentStatus(doc.expiryDate); %>
             <tr>
-              <td>
+              <td class="cell-primary">
                 <span class="doc-name"><%= doc.documentType %></span>
                 <span class="cell-sub" title="<%= doc.fileName || '' %>"><%= doc.fileName || 'No file attached' %></span>
               </td>
-              <td class="mono"><%= doc.documentNumber || '—' %></td>
-              <td class="nowrap"><%= h.formatDate(doc.issueDate) %></td>
-              <td>
+              <td data-label="Number" class="mono"><%= doc.documentNumber || '—' %></td>
+              <td data-label="Issued" class="nowrap"><%= h.formatDate(doc.issueDate) %></td>
+              <td data-label="Expiry">
                 <span class="nowrap"><%= h.formatDate(doc.expiryDate) %></span>
                 <% if (doc.expiryDate) { %><span class="cell-sub"><%= h.relativeDays(s.days) %></span><% } else { %><span class="cell-sub">No expiry</span><% } %>
               </td>
-              <td><span class="badge badge-<%= s.key %>"><%= s.label %></span></td>
-              <td class="text-right">
+              <td data-label="Status"><span class="badge badge-<%= s.key %>"><%= s.label %></span></td>
+              <td class="text-right cell-actions">
                 <div class="row-actions">
                   <% if (doc.fileSize) { %>
                     <a href="/employees/<%= employee.id %>/documents/<%= doc.id %>" target="_blank" rel="noopener" class="btn btn-sm btn-secondary">View</a>

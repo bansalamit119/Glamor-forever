@@ -54,7 +54,7 @@
         <tbody>
           <% employees.forEach(e => { %>
             <tr class="row-link" data-href="/employees/<%= e.id %>">
-              <td>
+              <td class="cell-primary">
                 <a href="/employees/<%= e.id %>" class="person">
                   <span class="avatar"><%= h.initials(e.firstName, e.lastName) %></span>
                   <span>
@@ -63,11 +63,11 @@
                   </span>
                 </a>
               </td>
-              <td class="mono"><%= e.employeeNumber %></td>
-              <td><%= e.jobTitle || '—' %></td>
-              <td><%= e.branch.name %></td>
-              <td><span class="badge badge-status-<%= e.employmentStatus.toLowerCase().replace(' ', '-') %>"><%= e.employmentStatus %></span></td>
-              <td>
+              <td data-label="Employee ID" class="mono"><%= e.employeeNumber %></td>
+              <td data-label="Position"><%= e.jobTitle || '—' %></td>
+              <td data-label="Branch"><%= e.branch.name %></td>
+              <td data-label="Status"><span class="badge badge-status-<%= e.employmentStatus.toLowerCase().replace(' ', '-') %>"><%= e.employmentStatus %></span></td>
+              <td data-label="Documents">
                 <span class="nowrap"><%= e.documents.length %> document<%= e.documents.length === 1 ? '' : 's' %></span>
                 <% if (e.expiredCount) { %>
                   <span class="dot-note dot-expired"><%= e.expiredCount %> expired</span>
@@ -75,7 +75,7 @@
                   <span class="dot-note dot-expiring"><%= e.attentionCount %> expiring</span>
                 <% } %>
               </td>
-              <td class="text-right"><a href="/employees/<%= e.id %>" class="btn btn-sm btn-secondary">View</a></td>
+              <td class="text-right cell-actions"><a href="/employees/<%= e.id %>" class="btn btn-sm btn-secondary">View</a></td>
             </tr>
           <% }) %>
         </tbody>
