@@ -348,6 +348,42 @@ legend + * { clear: both; }
 .field { margin-bottom: 16px; }
 .field label { display: block; margin-bottom: 6px; color: var(--text-soft); font-size: 13px; font-weight: 500; }
 .field-hint { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+.field-label { display: block; margin-bottom: 8px; color: var(--text-soft); font-size: 13px; font-weight: 500; }
+.field-optional { margin-left: 6px; color: var(--muted); font-size: 12px; font-weight: 400; }
+
+/* Phone: country-code dropdown joined to the number input */
+.phone-input { display: flex; }
+.phone-input select {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 45%;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  background-color: var(--surface-alt);
+}
+.phone-input input { flex: 1; min-width: 0; margin-left: -1px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.phone-input select:focus, .phone-input input:focus { position: relative; z-index: 1; }
+
+/* Multi-select as checkbox chips (employee branches) */
+.check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.field .check-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 400;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.check-chip:hover { border-color: #cbc2bc; }
+.check-chip:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.check-chip input { width: 16px; height: 16px; flex-shrink: 0; margin: 0; accent-color: var(--accent); }
+.check-chip-name { display: block; font-weight: 500; }
 .req { color: var(--accent); }
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 18px; border-top: 1px solid var(--border); }
 

@@ -1,0 +1,27 @@
+<div class="page-header">
+  <div>
+    <a href="/companies" class="back-link">← Companies</a>
+    <h1>Edit Company</h1>
+    <p class="subtitle">
+      <a href="/employees?company=<%= company.id %>" class="link"><%= company._count.employees %> employee<%= company._count.employees === 1 ? '' : 's' %></a> in this company.
+    </p>
+  </div>
+</div>
+
+<%- include('_form', { action: '/companies/' + company.id + '/edit', submitLabel: 'Save Changes' }) %>
+
+<section class="card danger-zone form-narrow">
+  <div>
+    <h2>Delete company</h2>
+    <p class="card-sub">
+      <% if (company._count.employees > 0) { %>
+        This company has employees. Move them to another company before deleting it.
+      <% } else { %>
+        Permanently removes this company.
+      <% } %>
+    </p>
+  </div>
+  <form method="POST" action="/companies/<%= company.id %>/delete" data-confirm="Delete this company? This cannot be undone.">
+    <button type="submit" class="btn btn-danger" <%= company._count.employees > 0 ? 'disabled' : '' %>>Delete Company</button>
+  </form>
+</section>

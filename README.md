@@ -39,9 +39,11 @@ npx prisma generate
 npx prisma migrate dev      # creates the database (if needed) and tables
 npm run prisma:seed         # loads fictional demo data (only if the database is empty)
 npm run prisma:seed:reset   # WIPES all data and reloads the demo data
+npm run db:clear            # shows what is in the database (deletes nothing)
+npm run db:clear -- --yes   # DELETES all branches, employees and documents (tables stay)
 ```
 
-The seed creates fictional UK data: 4 branches (London Soho, London Canary Wharf, Manchester, Edinburgh), 10 employees and 27 documents, each with a small sample PDF. Expiry dates are relative to the day you run the seed, so the dashboard always shows a mix of valid, expiring, urgent and expired documents. Phone numbers use Ofcom's ranges reserved for fiction.
+The seed creates fictional UK data: 2 companies, 4 branches (London Soho, London Canary Wharf, Manchester, Edinburgh), 10 employees and 28 documents, each with a small sample PDF. Expiry dates are relative to the day you run the seed, so the dashboard always shows a mix of valid, expiring, urgent and expired documents. Phone numbers use Ofcom's ranges reserved for fiction.
 
 ## Start
 
@@ -90,10 +92,11 @@ helpers.js             Prisma client, constants, expiry-status + date/form helpe
 routes/dashboard.js    Dashboard stats + documents needing attention
 routes/employees.js    Employee CRUD, search/filter, documents + file uploads
 routes/branches.js     Branch CRUD
+routes/companies.js    Company CRUD
 views/                 EJS templates (layout.ejs wraps every page except login)
 public/css/style.css   All styling
 public/js/app.js       Small enhancements (delete confirms, clickable rows, flash dismiss)
-prisma/schema.prisma   Branch, Employee, EmployeeDocument
+prisma/schema.prisma   Company, Branch, Employee (many-to-many with Branch), EmployeeDocument
 prisma/seed.js         Fictional UK demo data
 render.yaml            Render Blueprint (web service + PostgreSQL)
 ```

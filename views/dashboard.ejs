@@ -54,7 +54,7 @@
             <tr>
               <th>Employee</th>
               <th>Document</th>
-              <th>Branch</th>
+              <th>Company</th>
               <th>Expiry</th>
               <th>Status</th>
             </tr>
@@ -69,7 +69,7 @@
                   </a>
                 </td>
                 <td data-label="Document"><%= doc.documentType %></td>
-                <td data-label="Branch" class="muted"><%= doc.employee.branch.name %></td>
+                <td data-label="Company" class="muted"><%= doc.employee.company.name %></td>
                 <td data-label="Expiry">
                   <span class="nowrap"><%= h.formatDate(doc.expiryDate) %></span>
                   <span class="cell-sub"><%= h.relativeDays(s.days) %></span>

@@ -1,0 +1,14 @@
+<%# Phone field with a country-code dropdown next to it.
+    Params: label, codeName, numberName, code, number %>
+<div class="field">
+  <label for="<%= numberName %>"><%= label %></label>
+  <div class="phone-input">
+    <select name="<%= codeName %>" aria-label="<%= label %> country code">
+      <% const selected = code || h.DEFAULT_PHONE_CODE; %>
+      <% h.PHONE_COUNTRY_CODES.forEach(c => { %>
+        <option value="<%= c.code %>" <%= selected === c.code ? 'selected' : '' %>><%= c.label %></option>
+      <% }) %>
+    </select>
+    <input id="<%= numberName %>" name="<%= numberName %>" type="tel" inputmode="tel" value="<%= number || '' %>" maxlength="30" placeholder="7700 900123">
+  </div>
+</div>

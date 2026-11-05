@@ -56,27 +56,33 @@ const branches = [
 
 const CITY = ['London', 'London', 'Manchester', 'Edinburgh'];
 
+const companies = [
+  { name: 'Glamour Forever Ltd', address: '42 Wardour Street, London W1D 6QZ', phone: '+44 20 7946 0100', email: 'hello@example.com' },
+  { name: 'Glamour Forever (Scotland) Ltd', address: '55 George Street, Edinburgh EH2 2HT', phone: '+44 131 496 0300', email: 'scotland@example.com' },
+];
+
+// company: index into companies. branches: indexes into branches (optional, can be several).
 // docs: [documentType, expiry offset in days from today (null = no expiry)]
 const employees = [
-  { first: 'Sophie', last: 'Turnbull', title: 'Salon Manager', branch: 0, status: 'Active', dob: '1987-04-12', start: '2019-03-04',
+  { first: 'Sophie', last: 'Turnbull', title: 'Salon Manager', company: 0, branches: [0, 1], status: 'Active', dob: '1987-04-12', start: '2019-03-04',
     docs: [['Passport', 1400], ['Right to Work Check', null], ['National Insurance Number', null], ['Employment Contract', null]] },
-  { first: 'Amara', last: 'Okoye', title: 'Senior Nail Technician', branch: 0, status: 'Active', dob: '1992-09-23', start: '2020-06-15',
+  { first: 'Amara', last: 'Okoye', title: 'Senior Nail Technician', company: 0, branches: [0], status: 'Active', dob: '1992-09-23', start: '2020-06-15',
     docs: [['eVisa / Share Code', 12], ['Passport', 900], ['Proof of Address', null]] },
-  { first: 'Chloe', last: 'Harrington', title: 'Nail Technician', branch: 0, status: 'Active', dob: '1998-01-30', start: '2023-02-06',
+  { first: 'Chloe', last: 'Harrington', title: 'Nail Technician', company: 0, branches: [0], status: 'Active', dob: '1998-01-30', start: '2023-02-06',
     docs: [['Passport', 48], ['National Insurance Number', null], ['Qualification (NVQ / VTCT)', null]] },
-  { first: 'Linh', last: 'Tran', title: 'Nail Technician', branch: 1, status: 'Active', dob: '1995-07-08', start: '2021-09-20',
+  { first: 'Linh', last: 'Tran', title: 'Nail Technician', company: 0, branches: [1], status: 'Active', dob: '1995-07-08', start: '2021-09-20',
     docs: [['eVisa / Share Code', 24], ['Biometric Residence Permit', -30], ['Qualification (NVQ / VTCT)', null]] },
-  { first: 'Isla', last: 'McKenzie', title: 'Assistant Manager', branch: 1, status: 'Active', dob: '1990-05-19', start: '2018-10-01',
+  { first: 'Isla', last: 'McKenzie', title: 'Assistant Manager', company: 0, branches: [1, 2], status: 'Active', dob: '1990-05-19', start: '2018-10-01',
     docs: [['Driving Licence', 2100], ['DBS Certificate', null], ['Employment Contract', null]] },
-  { first: 'Priya', last: 'Sharma', title: 'Receptionist', branch: 1, status: 'On Leave', dob: '2000-11-02', start: '2024-01-15',
+  { first: 'Priya', last: 'Sharma', title: 'Receptionist', company: 0, branches: [1], status: 'On Leave', dob: '2000-11-02', start: '2024-01-15',
     docs: [['Passport', 75], ['Proof of Address', null]] },
-  { first: 'Megan', last: 'Price', title: 'Salon Manager', branch: 2, status: 'Active', dob: '1986-02-27', start: '2017-04-24',
+  { first: 'Megan', last: 'Price', title: 'Salon Manager', company: 0, branches: [2], status: 'Active', dob: '1986-02-27', start: '2017-04-24',
     docs: [['Passport', 1600], ['Right to Work Check', null], ['Qualification (NVQ / VTCT)', null]] },
-  { first: 'Daria', last: 'Kowalska', title: 'Senior Nail Technician', branch: 2, status: 'Active', dob: '1991-03-14', start: '2019-11-11',
+  { first: 'Daria', last: 'Kowalska', title: 'Senior Nail Technician', company: 0, branches: [2], status: 'Active', dob: '1991-03-14', start: '2019-11-11',
     docs: [['eVisa / Share Code', -8], ['Passport', 61], ['National Insurance Number', null]] },
-  { first: 'Grace', last: 'Adeyemi', title: 'Beauty Therapist', branch: 3, status: 'Active', dob: '1996-10-10', start: '2022-05-03',
+  { first: 'Grace', last: 'Adeyemi', title: 'Beauty Therapist', company: 1, branches: [3], status: 'Active', dob: '1996-10-10', start: '2022-05-03',
     docs: [['Passport', 7], ['Qualification (NVQ / VTCT)', null]] },
-  { first: 'Kirsty', last: 'Campbell', title: 'Nail Technician', branch: 3, status: 'Inactive', dob: '1993-12-01', start: '2020-08-17',
+  { first: 'Kirsty', last: 'Campbell', title: 'Nail Technician', company: 1, branches: [], status: 'Inactive', dob: '1993-12-01', start: '2020-08-17',
     docs: [['Driving Licence', -20], ['Right to Work Check', null]] },
 ];
 
@@ -96,9 +102,9 @@ function documentNumber(type, i, j, last) {
 }
 
 async function main() {
-  const existing = await prisma.branch.count();
+  const existing = (await prisma.company.count()) + (await prisma.branch.count()) + (await prisma.employee.count());
   if (existing > 0 && !force) {
-    console.log(`Database already has data (${existing} branches) - skipping seed. Use "npm run prisma:seed:reset" to wipe and reseed.`);
+    console.log(`Database already has data (${existing} companies/branches/employees) - skipping seed. Use "npm run prisma:seed:reset" to wipe and reseed.`);
     return;
   }
 
@@ -106,8 +112,13 @@ async function main() {
   await prisma.employeeDocument.deleteMany();
   await prisma.employee.deleteMany();
   await prisma.branch.deleteMany();
+  await prisma.company.deleteMany();
 
-  console.log('Creating branches...');
+  console.log('Creating companies and branches...');
+  const createdCompanies = [];
+  for (const c of companies) {
+    createdCompanies.push(await prisma.company.create({ data: { ...c, status: 'Active' } }));
+  }
   const createdBranches = [];
   for (const b of branches) {
     createdBranches.push(await prisma.branch.create({ data: { ...b, status: 'Active' } }));
@@ -122,15 +133,18 @@ async function main() {
         firstName: e.first,
         lastName: e.last,
         email: `${e.first}.${e.last}@example.com`.toLowerCase(),
-        phone: `+44 7700 900${String(100 + i * 37).slice(-3)}`,
+        phoneCountryCode: '+44',
+        phone: `7700 900${String(100 + i * 37).slice(-3)}`,
         dateOfBirth: date(e.dob),
-        address: `Flat ${i + 2}, ${10 + i * 7} Example Road, ${CITY[e.branch]}`,
+        address: `Flat ${i + 2}, ${10 + i * 7} Example Road, ${CITY[e.branches[0] ?? 3]}`,
         jobTitle: e.title,
-        branchId: createdBranches[e.branch].id,
+        companyId: createdCompanies[e.company].id,
+        branches: { connect: e.branches.map((b) => ({ id: createdBranches[b].id })) },
         employmentStatus: e.status,
         startDate: date(e.start),
         emergencyContactName: `${['Alex', 'Jordan', 'Sam', 'Taylor', 'Morgan', 'Casey'][i % 6]} ${e.last}`,
-        emergencyContactPhone: `+44 7700 900${String(600 + i * 29).slice(-3)}`,
+        emergencyContactPhoneCountryCode: '+44',
+        emergencyContactPhone: `7700 900${String(600 + i * 29).slice(-3)}`,
         notes: i === 0 ? 'Key holder. Responsible for weekly stock orders.' : null,
       },
     });
@@ -165,7 +179,7 @@ async function main() {
     }
   }
 
-  console.log(`Done: ${createdBranches.length} branches, ${employees.length} employees, ${docCount} documents.`);
+  console.log(`Done: ${createdCompanies.length} companies, ${createdBranches.length} branches, ${employees.length} employees, ${docCount} documents.`);
 }
 
 main()

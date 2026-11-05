@@ -120,6 +120,7 @@ app.get('/', (req, res) => res.redirect('/dashboard'));
 app.use('/dashboard', require('./routes/dashboard'));
 app.use('/employees', require('./routes/employees'));
 app.use('/branches', require('./routes/branches'));
+app.use('/companies', require('./routes/companies'));
 
 // ---- 404 + error handling ----
 app.use((req, res) => {

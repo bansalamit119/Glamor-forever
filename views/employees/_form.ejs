@@ -22,10 +22,7 @@
         <label for="email">Email</label>
         <input id="email" name="email" type="email" value="<%= employee.email || '' %>" maxlength="160">
       </div>
-      <div class="field">
-        <label for="phone">Phone</label>
-        <input id="phone" name="phone" value="<%= employee.phone || '' %>" maxlength="40">
-      </div>
+      <%- include('_phone', { label: 'Phone', codeName: 'phoneCountryCode', numberName: 'phone', code: employee.phoneCountryCode, number: employee.phone }) %>
       <div class="field">
         <label for="dateOfBirth">Date of Birth</label>
         <input id="dateOfBirth" name="dateOfBirth" type="date" value="<%= h.inputDate(employee.dateOfBirth) %>">
@@ -52,13 +49,16 @@
         </datalist>
       </div>
       <div class="field">
-        <label for="branchId">Branch <span class="req">*</span></label>
-        <select id="branchId" name="branchId" required>
-          <option value="">Select a branch…</option>
-          <% branches.forEach(b => { %>
-            <option value="<%= b.id %>" <%= employee.branchId === b.id ? 'selected' : '' %>><%= b.name %> — <%= b.region %></option>
+        <label for="companyId">Company <span class="req">*</span></label>
+        <select id="companyId" name="companyId" required>
+          <option value="">Select a company…</option>
+          <% companies.forEach(c => { %>
+            <option value="<%= c.id %>" <%= employee.companyId === c.id ? 'selected' : '' %>><%= c.name %></option>
           <% }) %>
         </select>
+        <% if (companies.length === 0) { %>
+          <span class="field-hint">No companies yet — <a href="/companies/new" class="link">add a company</a> first.</span>
+        <% } %>
       </div>
       <div class="field">
         <label for="employmentStatus">Employment Status <span class="req">*</span></label>
@@ -73,6 +73,25 @@
         <input id="startDate" name="startDate" type="date" value="<%= h.inputDate(employee.startDate) %>">
       </div>
     </div>
+    <div class="field">
+      <span class="field-label">Branches <span class="field-optional">optional · select any</span></span>
+      <% if (branches.length === 0) { %>
+        <span class="field-hint">No branches yet.</span>
+      <% } else { %>
+        <div class="check-grid">
+          <% const selectedBranches = employee.branchIds || []; %>
+          <% branches.forEach(b => { %>
+            <label class="check-chip">
+              <input type="checkbox" name="branchIds" value="<%= b.id %>" <%= selectedBranches.includes(b.id) ? 'checked' : '' %>>
+              <span>
+                <span class="check-chip-name"><%= b.name %></span>
+                <span class="cell-sub"><%= b.region %></span>
+              </span>
+            </label>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
   </fieldset>
 
   <fieldset>
@@ -82,10 +101,7 @@
         <label for="emergencyContactName">Name</label>
         <input id="emergencyContactName" name="emergencyContactName" value="<%= employee.emergencyContactName || '' %>" maxlength="120">
       </div>
-      <div class="field">
-        <label for="emergencyContactPhone">Phone</label>
-        <input id="emergencyContactPhone" name="emergencyContactPhone" value="<%= employee.emergencyContactPhone || '' %>" maxlength="40">
-      </div>
+      <%- include('_phone', { label: 'Phone', codeName: 'emergencyContactPhoneCountryCode', numberName: 'emergencyContactPhone', code: employee.emergencyContactPhoneCountryCode, number: employee.emergencyContactPhone }) %>
     </div>
   </fieldset>
 

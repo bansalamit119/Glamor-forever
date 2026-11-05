@@ -2,8 +2,8 @@ const path = require('path');
 const express = require('express');
 const multer = require('multer');
 const {
-  prisma, DOCUMENT_TYPES, EMPLOYMENT_STATUSES,
-  clean, parseDate, isValidEmail, toId, setFlash, documentStatus,
+  prisma, DOCUMENT_TYPES, EMPLOYMENT_STATUSES, DEFAULT_PHONE_CODE,
+  clean, parseDate, isValidEmail, isValidPhone, phoneCode, toId, toIds, setFlash, documentStatus,
 } = require('../helpers');
 
 const router = express.Router();
@@ -94,7 +94,10 @@ function documentNotFound(res) {
 // Middleware: load the employee from :id or :employeeId into req.employee.
 async function loadEmployee(req, res, next) {
   const id = toId(req.params.id || req.params.employeeId);
-  const employee = id && await prisma.employee.findUnique({ where: { id }, include: { branch: true } });
+  const employee = id && await prisma.employee.findUnique({
+    where: { id },
+    include: { company: true, branches: { orderBy: { name: 'asc' } } },
+  });
   if (!employee) return employeeNotFound(res);
   req.employee = employee;
   next();
@@ -111,24 +114,28 @@ async function loadDocument(req, res, next) {
   next();
 }
 
-// Read + validate the employee form. Returns { data, errors }.
+// Read + validate the employee form. Returns { data, branchIds, errors }.
+// `data` holds the employee's own columns; `branchIds` are the selected branches (optional).
 async function readEmployeeForm(body = {}) {
   const data = {
     firstName: clean(body.firstName, 80),
     lastName: clean(body.lastName, 80),
     employeeNumber: clean(body.employeeNumber, 40),
     email: clean(body.email, 160),
-    phone: clean(body.phone, 40),
+    phoneCountryCode: phoneCode(body.phoneCountryCode) || DEFAULT_PHONE_CODE,
+    phone: clean(body.phone, 30),
     dateOfBirth: parseDate(body.dateOfBirth),
     address: clean(body.address, 255),
     jobTitle: clean(body.jobTitle, 80),
-    branchId: toId(body.branchId),
+    companyId: toId(body.companyId),
     employmentStatus: EMPLOYMENT_STATUSES.includes(body.employmentStatus) ? body.employmentStatus : null,
     startDate: parseDate(body.startDate),
     emergencyContactName: clean(body.emergencyContactName, 120),
-    emergencyContactPhone: clean(body.emergencyContactPhone, 40),
+    emergencyContactPhoneCountryCode: phoneCode(body.emergencyContactPhoneCountryCode) || DEFAULT_PHONE_CODE,
+    emergencyContactPhone: clean(body.emergencyContactPhone, 30),
     notes: clean(body.notes, 2000),
   };
+  const branchIds = toIds(body.branchIds);
 
   const errors = [];
   if (!data.firstName) errors.push('First name is required.');
@@ -136,14 +143,21 @@ async function readEmployeeForm(body = {}) {
   if (!data.employeeNumber) errors.push('Employee number is required.');
   if (!data.employmentStatus) errors.push('Employment status is required.');
   if (data.email && !isValidEmail(data.email)) errors.push('Email address is not valid.');
+  if (data.phone && !isValidPhone(data.phone)) errors.push('Phone number may only contain digits, spaces, dashes and brackets.');
+  if (data.emergencyContactPhone && !isValidPhone(data.emergencyContactPhone)) {
+    errors.push('Emergency contact phone may only contain digits, spaces, dashes and brackets.');
+  }
   if (body.dateOfBirth && !data.dateOfBirth) errors.push('Date of birth is not a valid date.');
   if (body.startDate && !data.startDate) errors.push('Start date is not a valid date.');
-  if (!data.branchId) {
-    errors.push('Branch is required.');
-  } else if (!(await prisma.branch.findUnique({ where: { id: data.branchId } }))) {
-    errors.push('Selected branch does not exist.');
+  if (!data.companyId) {
+    errors.push('Company is required.');
+  } else if (!(await prisma.company.findUnique({ where: { id: data.companyId } }))) {
+    errors.push('Selected company does not exist.');
   }
-  return { data, errors };
+  if (branchIds.length && (await prisma.branch.count({ where: { id: { in: branchIds } } })) !== branchIds.length) {
+    errors.push('One or more selected branches do not exist.');
+  }
+  return { data, branchIds, errors };
 }
 
 // Read + validate the document form. Returns { data, errors }.
@@ -179,17 +193,32 @@ async function nextEmployeeNumber() {
   return `GF-${String(max + 1).padStart(5, '0')}`;
 }
 
-function allBranches() {
-  return prisma.branch.findMany({ orderBy: { name: 'asc' } });
+// Companies + branches for the employee form dropdown/checkboxes and list filters.
+async function formOptions() {
+  const [companies, branches] = await Promise.all([
+    prisma.company.findMany({ orderBy: { name: 'asc' } }),
+    prisma.branch.findMany({ orderBy: { name: 'asc' } }),
+  ]);
+  return { companies, branches };
+}
+
+// The phone country code is only kept when there is a number to go with it.
+function withoutUnusedPhoneCodes(data) {
+  return {
+    ...data,
+    phoneCountryCode: data.phone ? data.phoneCountryCode : null,
+    emergencyContactPhoneCountryCode: data.emergencyContactPhone ? data.emergencyContactPhoneCountryCode : null,
+  };
 }
 
 // ============================================================================
 // Employees
 // ============================================================================
 
-// GET /employees?search=sarah&branch=1&status=Active
+// GET /employees?search=sarah&company=1&branch=1&status=Active
 router.get('/', async (req, res) => {
   const search = clean(req.query.search, 100) || '';
+  const companyId = toId(req.query.company);
   const branchId = toId(req.query.branch);
   const status = EMPLOYMENT_STATUSES.includes(req.query.status) ? req.query.status : '';
 
@@ -205,16 +234,21 @@ router.get('/', async (req, res) => {
       ],
     }));
   }
-  if (branchId) where.branchId = branchId;
+  if (companyId) where.companyId = companyId;
+  if (branchId) where.branches = { some: { id: branchId } };
   if (status) where.employmentStatus = status;
 
-  const [employees, branches, totalCount] = await Promise.all([
+  const [employees, options, totalCount] = await Promise.all([
     prisma.employee.findMany({
       where,
-      include: { branch: true, documents: { select: { expiryDate: true } } },
+      include: {
+        company: true,
+        branches: { orderBy: { name: 'asc' } },
+        documents: { select: { expiryDate: true } },
+      },
       orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
     }),
-    allBranches(),
+    formOptions(),
     prisma.employee.count(),
   ]);
 
@@ -228,37 +262,42 @@ router.get('/', async (req, res) => {
   res.render('employees/index', {
     title: 'Employees',
     employees,
-    branches,
+    ...options,
     totalCount,
-    filters: { search, branch: branchId || '', status },
+    filters: { search, company: companyId || '', branch: branchId || '', status },
   });
 });
 
 // GET /employees/new
 router.get('/new', async (req, res) => {
-  const branches = await allBranches();
+  const options = await formOptions();
+  const branchId = toId(req.query.branch);
   res.render('employees/new', {
     title: 'Add Employee',
     employee: {
       employeeNumber: await nextEmployeeNumber(),
       employmentStatus: 'Active',
-      branchId: toId(req.query.branch),
+      // Pre-select the company when one is passed in the URL or there is only one.
+      companyId: toId(req.query.company) || (options.companies.length === 1 ? options.companies[0].id : null),
+      branchIds: branchId ? [branchId] : [],
     },
-    branches,
+    ...options,
     errors: [],
   });
 });
 
 // POST /employees
 router.post('/', async (req, res) => {
-  const { data, errors } = await readEmployeeForm(req.body);
+  const { data, branchIds, errors } = await readEmployeeForm(req.body);
   const renderForm = async (errs) => res.status(400).render('employees/new', {
-    title: 'Add Employee', employee: data, branches: await allBranches(), errors: errs,
+    title: 'Add Employee', employee: { ...data, branchIds }, ...(await formOptions()), errors: errs,
   });
 
   if (errors.length) return renderForm(errors);
   try {
-    const employee = await prisma.employee.create({ data });
+    const employee = await prisma.employee.create({
+      data: { ...withoutUnusedPhoneCodes(data), branches: { connect: branchIds.map((id) => ({ id })) } },
+    });
     setFlash(req, 'success', 'Employee created successfully.');
     res.redirect(`/employees/${employee.id}`);
   } catch (err) {
@@ -283,21 +322,27 @@ router.get('/:id', loadEmployee, async (req, res) => {
 // GET /employees/:id/edit
 router.get('/:id/edit', loadEmployee, async (req, res) => {
   res.render('employees/edit', {
-    title: 'Edit Employee', employee: req.employee, branches: await allBranches(), errors: [],
+    title: 'Edit Employee',
+    employee: { ...req.employee, branchIds: req.employee.branches.map((b) => b.id) },
+    ...(await formOptions()),
+    errors: [],
   });
 });
 
 // POST /employees/:id/edit
 router.post('/:id/edit', loadEmployee, async (req, res) => {
   const { id } = req.employee;
-  const { data, errors } = await readEmployeeForm(req.body);
+  const { data, branchIds, errors } = await readEmployeeForm(req.body);
   const renderForm = async (errs) => res.status(400).render('employees/edit', {
-    title: 'Edit Employee', employee: { ...data, id }, branches: await allBranches(), errors: errs,
+    title: 'Edit Employee', employee: { ...data, branchIds, id }, ...(await formOptions()), errors: errs,
   });
 
   if (errors.length) return renderForm(errors);
   try {
-    await prisma.employee.update({ where: { id }, data });
+    await prisma.employee.update({
+      where: { id },
+      data: { ...withoutUnusedPhoneCodes(data), branches: { set: branchIds.map((branchId) => ({ id: branchId })) } },
+    });
     setFlash(req, 'success', 'Employee updated successfully.');
     res.redirect(`/employees/${id}`);
   } catch (err) {

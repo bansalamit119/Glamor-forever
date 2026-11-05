@@ -1,0 +1,59 @@
+<div class="page-header">
+  <div>
+    <h1>Companies</h1>
+    <p class="subtitle"><%= companies.length %> compan<%= companies.length === 1 ? 'y' : 'ies' %>.</p>
+  </div>
+  <div class="actions-row">
+    <a href="/companies/new" class="btn btn-primary">+ Add Company</a>
+  </div>
+</div>
+
+<section class="card">
+  <% if (companies.length === 0) { %>
+    <div class="empty-inline">No companies yet. <a href="/companies/new" class="link">Add your first company</a>.</div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Company No.</th>
+            <th>Phone</th>
+            <th>Employees</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% companies.forEach(c => { %>
+            <tr>
+              <td class="cell-primary">
+                <div class="person">
+                  <span class="avatar avatar-branch">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>
+                  </span>
+                  <span>
+                    <span class="person-name"><%= c.name %></span>
+                    <span class="cell-sub"><%= c.email || c.address || '—' %></span>
+                  </span>
+                </div>
+              </td>
+              <td data-label="Company No." class="mono"><%= c.companyNumber || '—' %></td>
+              <td data-label="Phone" class="nowrap"><%= c.phone || '—' %></td>
+              <td data-label="Employees">
+                <a href="/employees?company=<%= c.id %>" class="link"><%= c._count.employees %> employee<%= c._count.employees === 1 ? '' : 's' %></a>
+              </td>
+              <td data-label="Status"><span class="badge badge-status-<%= c.status.toLowerCase() %>"><%= c.status %></span></td>
+              <td class="text-right cell-actions">
+                <div class="row-actions">
+                  <a href="/employees?company=<%= c.id %>" class="btn btn-sm btn-ghost">Staff</a>
+                  <a href="/companies/<%= c.id %>/edit" class="btn btn-sm btn-secondary">Edit</a>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

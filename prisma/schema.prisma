@@ -1,5 +1,7 @@
 // Glamour Forever - Prisma schema
-// Three simple models: Branch -> Employee -> EmployeeDocument
+//   Company  -> Employees (every employee belongs to one company)
+//   Branch  <-> Employees (an employee can work at zero, one or many branches)
+//   Employee -> EmployeeDocuments
 
 generator client {
   provider = "prisma-client-js"
@@ -10,6 +12,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Company {
+  id            Int        @id @default(autoincrement())
+  name          String
+  companyNumber String?    // Companies House registration number
+  address       String?
+  phone         String?
+  email         String?
+  status        String     @default("Active") // "Active" | "Inactive"
+  employees     Employee[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
 model Branch {
   id        Int        @id @default(autoincrement())
   name      String
@@ -17,31 +32,34 @@ model Branch {
   address   String?
   phone     String?
   status    String     @default("Active") // "Active" | "Inactive"
-  employees Employee[]
+  employees Employee[] // many-to-many (Prisma manages the _BranchToEmployee join table)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
 
 model Employee {
-  id                    Int                @id @default(autoincrement())
-  employeeNumber        String             @unique
-  firstName             String
-  lastName              String
-  email                 String?
-  phone                 String?
-  dateOfBirth           DateTime?          @db.Date
-  address               String?
-  jobTitle              String?
-  branchId              Int
-  branch                Branch             @relation(fields: [branchId], references: [id])
-  employmentStatus      String             @default("Active") // Active | Inactive | On Leave | Terminated
-  startDate             DateTime?          @db.Date
-  emergencyContactName  String?
-  emergencyContactPhone String?
-  notes                 String?
-  documents             EmployeeDocument[]
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  id                               Int                @id @default(autoincrement())
+  employeeNumber                   String             @unique
+  firstName                        String
+  lastName                         String
+  email                            String?
+  phoneCountryCode                 String?            // e.g. "+44"
+  phone                            String?            // number without the country code
+  dateOfBirth                      DateTime?          @db.Date
+  address                          String?
+  jobTitle                         String?
+  companyId                        Int
+  company                          Company            @relation(fields: [companyId], references: [id])
+  branches                         Branch[]           // optional, can be several
+  employmentStatus                 String             @default("Active") // Active | Inactive | On Leave | Terminated
+  startDate                        DateTime?          @db.Date
+  emergencyContactName             String?
+  emergencyContactPhoneCountryCode String?
+  emergencyContactPhone            String?
+  notes                            String?
+  documents                        EmployeeDocument[]
+  createdAt                        DateTime           @default(now())
+  updatedAt                        DateTime           @updatedAt
 }
 
 model EmployeeDocument {

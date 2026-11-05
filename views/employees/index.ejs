@@ -1,7 +1,7 @@
 <div class="page-header">
   <div>
     <h1>Employees</h1>
-    <p class="subtitle"><%= totalCount %> employees across all branches.</p>
+    <p class="subtitle"><%= totalCount %> employees across all companies and branches.</p>
   </div>
   <div class="actions-row">
     <a href="/employees/new" class="btn btn-primary">+ Add Employee</a>
@@ -13,6 +13,12 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input type="search" name="search" value="<%= filters.search %>" placeholder="Search by name, employee ID or email…">
   </div>
+  <select name="company" class="auto-submit" aria-label="Company">
+    <option value="">All companies</option>
+    <% companies.forEach(c => { %>
+      <option value="<%= c.id %>" <%= filters.company === c.id ? 'selected' : '' %>><%= c.name %></option>
+    <% }) %>
+  </select>
   <select name="branch" class="auto-submit" aria-label="Branch">
     <option value="">All branches</option>
     <% branches.forEach(b => { %>
@@ -26,7 +32,7 @@
     <% }) %>
   </select>
   <button type="submit" class="btn btn-secondary">Search</button>
-  <% if (filters.search || filters.branch || filters.status) { %>
+  <% if (filters.search || filters.company || filters.branch || filters.status) { %>
     <a href="/employees" class="link">Clear</a>
   <% } %>
 </form>
@@ -35,7 +41,7 @@
   <% if (employees.length === 0) { %>
     <div class="empty-inline">
       No employees match your search.
-      <% if (filters.search || filters.branch || filters.status) { %><a href="/employees" class="link">Clear filters</a><% } %>
+      <% if (filters.search || filters.company || filters.branch || filters.status) { %><a href="/employees" class="link">Clear filters</a><% } %>
     </div>
   <% } else { %>
     <div class="table-wrap">
@@ -45,6 +51,7 @@
             <th>Employee</th>
             <th>Employee ID</th>
             <th>Position</th>
+            <th>Company</th>
             <th>Branch</th>
             <th>Status</th>
             <th>Documents</th>
@@ -65,7 +72,8 @@
               </td>
               <td data-label="Employee ID" class="mono"><%= e.employeeNumber %></td>
               <td data-label="Position"><%= e.jobTitle || '—' %></td>
-              <td data-label="Branch"><%= e.branch.name %></td>
+              <td data-label="Company"><%= e.company.name %></td>
+              <td data-label="Branch"><%= e.branches.length ? e.branches.map(b => b.name).join(', ') : '—' %></td>
               <td data-label="Status"><span class="badge badge-status-<%= e.employmentStatus.toLowerCase().replace(' ', '-') %>"><%= e.employmentStatus %></span></td>
               <td data-label="Documents">
                 <span class="nowrap"><%= e.documents.length %> document<%= e.documents.length === 1 ? '' : 's' %></span>

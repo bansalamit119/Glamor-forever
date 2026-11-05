@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
     // Documents requiring attention: expired or expiring within 90 days, soonest first
     prisma.employeeDocument.findMany({
       where: { expiryDate: { lte: in90Days } },
-      include: { employee: { include: { branch: true } } },
+      include: { employee: { include: { company: true } } },
       orderBy: { expiryDate: 'asc' },
       take: 10,
     }),

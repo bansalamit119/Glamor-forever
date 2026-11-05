@@ -39,6 +39,34 @@ const UK_REGIONS = [
 
 const EMPLOYMENT_STATUSES = ['Active', 'Inactive', 'On Leave', 'Terminated'];
 const BRANCH_STATUSES = ['Active', 'Inactive'];
+const COMPANY_STATUSES = ['Active', 'Inactive'];
+
+// Phone country codes for the dropdown next to phone fields. UK first (default).
+const DEFAULT_PHONE_CODE = '+44';
+const PHONE_COUNTRY_CODES = [
+  { code: '+44', label: 'UK +44' },
+  { code: '+353', label: 'IE +353' },
+  { code: '+1', label: 'US/CA +1' },
+  { code: '+33', label: 'FR +33' },
+  { code: '+49', label: 'DE +49' },
+  { code: '+34', label: 'ES +34' },
+  { code: '+351', label: 'PT +351' },
+  { code: '+39', label: 'IT +39' },
+  { code: '+48', label: 'PL +48' },
+  { code: '+40', label: 'RO +40' },
+  { code: '+359', label: 'BG +359' },
+  { code: '+370', label: 'LT +370' },
+  { code: '+91', label: 'IN +91' },
+  { code: '+92', label: 'PK +92' },
+  { code: '+880', label: 'BD +880' },
+  { code: '+84', label: 'VN +84' },
+  { code: '+63', label: 'PH +63' },
+  { code: '+86', label: 'CN +86' },
+  { code: '+234', label: 'NG +234' },
+  { code: '+27', label: 'ZA +27' },
+  { code: '+971', label: 'AE +971' },
+  { code: '+61', label: 'AU +61' },
+];
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -93,6 +121,12 @@ function relativeDays(days) {
   return `${days} day${days === 1 ? '' : 's'}`;
 }
 
+// ("+44", "7700 900123") -> "+44 7700 900123"
+function formatPhone(countryCode, number) {
+  if (!number) return '—';
+  return countryCode ? `${countryCode} ${number}` : number;
+}
+
 function initials(firstName, lastName) {
   return ((firstName || '')[0] || '').toUpperCase() + ((lastName || '')[0] || '').toUpperCase();
 }
@@ -117,6 +151,22 @@ function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+// Phone number without country code: digits, spaces, dashes, brackets.
+function isValidPhone(value) {
+  return /^[0-9][0-9 ()-]{3,19}$/.test(value);
+}
+
+// Form value -> a known country code, or null.
+function phoneCode(value) {
+  return PHONE_COUNTRY_CODES.some((c) => c.code === value) ? value : null;
+}
+
+// Form value(s) -> array of unique positive integer ids. Handles one value or many.
+function toIds(value) {
+  const values = Array.isArray(value) ? value : value === undefined ? [] : [value];
+  return [...new Set(values.map(toId).filter(Boolean))];
+}
+
 // Route param -> positive integer id, or null.
 function toId(value) {
   const n = Number(value);
@@ -135,6 +185,13 @@ module.exports = {
   UK_REGIONS,
   EMPLOYMENT_STATUSES,
   BRANCH_STATUSES,
+  COMPANY_STATUSES,
+  DEFAULT_PHONE_CODE,
+  PHONE_COUNTRY_CODES,
+  formatPhone,
+  isValidPhone,
+  phoneCode,
+  toIds,
   today,
   addDays,
   daysUntil,

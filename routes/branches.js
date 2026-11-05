@@ -83,21 +83,14 @@ router.post('/:id/edit', async (req, res) => {
   res.redirect('/branches');
 });
 
-// POST /branches/:id/delete - only allowed when the branch has no employees
+// POST /branches/:id/delete - employees are kept, they are just no longer assigned to it
 router.post('/:id/delete', async (req, res) => {
   const id = toId(req.params.id);
-  const branch = id && await prisma.branch.findUnique({
-    where: { id },
-    include: { _count: { select: { employees: true } } },
-  });
+  const branch = id && await prisma.branch.findUnique({ where: { id } });
   if (!branch) return branchNotFound(res);
 
-  if (branch._count.employees > 0) {
-    setFlash(req, 'error', `Unable to delete ${branch.name}: move or remove its ${branch._count.employees} employee(s) first.`);
-    return res.redirect(`/branches/${id}/edit`);
-  }
   await prisma.branch.delete({ where: { id } });
-  setFlash(req, 'success', 'Branch deleted successfully.');
+  setFlash(req, 'success', `${branch.name} deleted. Its employees were kept and unassigned from it.`);
   res.redirect('/branches');
 });
 

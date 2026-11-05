@@ -1,0 +1,47 @@
+<%# Shared company form used by new.ejs and edit.ejs %>
+<% if (errors.length) { %>
+  <div class="form-errors">
+    <strong>Unable to save company.</strong>
+    <ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul>
+  </div>
+<% } %>
+
+<form method="POST" action="<%= action %>" class="form card form-card form-narrow">
+  <div class="grid-2">
+    <div class="field">
+      <label for="name">Company Name <span class="req">*</span></label>
+      <input id="name" name="name" value="<%= company.name || '' %>" required maxlength="120" placeholder="Glamour Forever Ltd">
+    </div>
+    <div class="field">
+      <label for="companyNumber">Company Number</label>
+      <input id="companyNumber" name="companyNumber" value="<%= company.companyNumber || '' %>" maxlength="40" placeholder="Companies House number">
+    </div>
+  </div>
+  <div class="field">
+    <label for="address">Registered Address</label>
+    <input id="address" name="address" value="<%= company.address || '' %>" maxlength="255">
+  </div>
+  <div class="grid-2">
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input id="phone" name="phone" value="<%= company.phone || '' %>" maxlength="40">
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" value="<%= company.email || '' %>" maxlength="160">
+    </div>
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <% h.COMPANY_STATUSES.forEach(s => { %>
+          <option value="<%= s %>" <%= company.status === s ? 'selected' : '' %>><%= s %></option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <a href="/companies" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><%= submitLabel %></button>
+  </div>
+</form>
